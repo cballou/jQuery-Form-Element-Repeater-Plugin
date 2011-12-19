@@ -57,10 +57,9 @@ $('.container').repeater({
 	clearValues: true
 });
 </script>
- *
  */
 (function($) {
-	var $container, $group, $groupClone, opts, repeatCount;
+	var $container, $group, $groupClone, opts, repeatCount = 0;
 
 	$.fn.repeater = function(options) {
 		$container = $(this);
@@ -72,7 +71,7 @@ $('.container').repeater({
 		}
 
 		// parse out group details
-		$group = $(opts.groupClass);
+		$group = $('.' + opts.groupClass);
 		if (!$group.length) {
 			alert('You must specify a valid jQuery selector for the form element grouping option in Form Repeater.');
 			return false;
@@ -93,9 +92,9 @@ $('.container').repeater({
 		// retrieve form elements
 		$groupClone = $group.clone();
 		// watch for add
-		$btnAdd.live('click', addRepeater);
+		$container.find('.' + opts.btnAddClass).live('click', addRepeater);
 		// watch for remove
-		$btnRemove.live('click', removeRepeater);
+		$container.find('.' + opts.btnRemoveClass).live('click', removeRepeater);
 	}
 
 	/**
@@ -110,6 +109,7 @@ $('.container').repeater({
 
 		// don't exceed the max allowable items
 		if (opts.maxItems > 0 && repeatCount == opts.maxItems) {
+			alert('You have hit the maximum allowable items.');
 			return false;
 		}
 
@@ -137,12 +137,12 @@ $('.container').repeater({
 		var $btn = $(this);
 
 		// get all instances of repeaters
-		var $repeaters = $container.find(opts.groupSelector);
+		var $repeaters = $container.find('.' + opts.groupClass);
 		var numRepeaters = $repeaters.length;
 		if (numRepeaters > opts.minItems) {
 
 			// check if removing a specific repeater instance
-			var $match = $btn.closest(opts.groupSelector);
+			var $match = $btn.closest('.' + opts.groupClass);
 			if (!$match.length) {
 				// determine if removing first or last repeater
 				if (opts.repeatMode == 'append') {
@@ -191,12 +191,10 @@ $('.container').repeater({
 		if (pattern) {
 			// check pattern type
 			if (pattern.indexOf('+=') > -1) {
-				var matches = pattern.match(/\+=(\d)+/gi);
-				if (matches.length) {
-					for (var i in matches) {
-						var incr = parseInt(matches[i]);
-						returnVal = pattern.replace(/\+=(\d)+/i, opts.startingIndex + count + incr);
-					}
+				var matches = pattern.match(/\+=(\d+)/i);
+				if (matches && matches.length && matches[1]) {
+					var incr = parseInt(matches[1]);
+					returnVal = pattern.replace(/\+=(\d)+/i, opts.startingIndex + count + incr);
 				}
 			}
 
@@ -213,7 +211,7 @@ $('.container').repeater({
 	function reindex() {
 		var $repeaters, $curGroup;
 		var startIndex = opts.startingIndex;
-		var $repeaters = $container.find(opts.groupSelector);
+		var $repeaters = $container.find(opts.groupClass);
 		$repeaters.each(function() {
 			$curGroup = $(this);
 			_reindex($curGroup, startIndex);

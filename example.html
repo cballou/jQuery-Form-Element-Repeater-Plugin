@@ -1,0 +1,61 @@
+<html>
+  <head><title>Test</title></head>
+  <body>
+    <h1>jQuery Form Repeater Example</h1>
+    <h3>Example 1: Create a Group of Inputs</h3>
+    <div id="example1">
+        <div class="r-group">
+            <p>
+                <label for="vehicle_0_0" data-pattern-text="Vehicle Name +=1:">Vehicle Name 1:</label>
+                <input type="text" name="vehicle[0][name]" id="vehicle_0_name" data-pattern-name="vehicle[++][name]" data-pattern-id="vehicle_++_name" />
+            </p>
+            <p>
+                <label for="vehicle_0_0" data-pattern-text="Vehicle Type +=1:">Vehicle Type 1:</label>
+                <input type="text" name="vehicle[0][type]" id="vehicle_0_type" data-pattern-name="vehicle[++][type]" data-pattern-id="vehicle_++_type" />
+            </p>
+            <p>
+                <!-- Add a remove button for the item. If one didn't exist, it would be added to overall group -->
+                <button type="button" class="r-btnRemove">Remove -</button>
+            </p>
+        </div>
+        <button type="button" class="r-btnAdd">Add +</button>
+    </div>
+
+    <h4>Code:</h4>
+<pre>
+$('#example1').repeater({
+	btnAddClass: 'r-btnAdd',
+	btnRemoveClass: 'r-btnRemove',
+	groupClass: 'r-group',
+	minItems: 1,
+	maxItems: 0,
+	startingIndex: 0,
+	reindexOnDelete: true,
+	repeatMode: 'append',
+	animation: null,
+	animationSpeed: 400,
+	animationEasing: 'swing',
+	clearValues: true
+});
+</pre>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+  <script src="jquery.form-repeater.js" type="text/javascript"></script>
+  <script type="text/javascript">
+  $('#example1').repeater({
+      btnAddClass: 'r-btnAdd',
+      btnRemoveClass: 'r-btnRemove',
+      groupClass: 'r-group',
+      minItems: 1,
+      maxItems: 0,
+      startingIndex: 0,
+      reindexOnDelete: true,
+      repeatMode: 'append',
+      animation: null,
+      animationSpeed: 400,
+      animationEasing: 'swing',
+      clearValues: true
+  });
+  </script>
+  </body>
+</html>

@@ -61,7 +61,7 @@ $('.container').repeater({
 (function($) {
 	var $container, $group, $groupClone, opts, repeatCount = 0;
 
-	$.fn.repeater = function(options) {
+	$.fn.repeater = function(options, data) {
 		$container = $(this);
 		opts = $.extend({}, $.fn.repeater.defaults, options);
 		var $btnAdd = $container.find('.' + opts.btnAddClass);
@@ -95,17 +95,110 @@ $('.container').repeater({
 		$container.find('.' + opts.btnAddClass).live('click', addRepeater);
 		// watch for remove
 		$container.find('.' + opts.btnRemoveClass).live('click', removeRepeater);
+		
+		// allows for initial population of form data
+		if (data && data.length) {
+			var patternName, patternId, patternText,
+				idVal, nameVal, labelText, labelFor,
+				$elem, elemName, $label;
+
+			// create grouping for every row of data
+			for (var row in data) {
+				
+				// keep cloning
+				var $newClone = $groupClone.clone();
+				
+				if ($.isFunction(opts.beforeAdd)) {
+					$newClone = opts.beforeAdd.call(this, $newClone);
+				}
+				
+				var $formElems = $newClone.find(':input');
+				if ($formElems.length) {
+				
+					// populate each input field
+					$formElems.each(function() {
+						$elem = $(this);
+		
+						// check for elements naming
+						elemName = $elem.data('name');
+						
+						// check for matching value
+						if (typeof data[row][elemName] != 'undefined') {
+							$elem.val(data[row][elemName]);
+						} else {
+							$elem.val('');
+						}
+
+						patternName = $elem.data('pattern-name');
+						if (patternName) {
+							nameVal = $elem.attr('name');
+							nameVal = parsePattern(patternName, nameVal, row);
+							$elem.attr('name', nameVal);
+						}
+		
+						patternId = $elem.data('pattern-id');
+						if (patternId) {
+							idVal = $elem.attr('id');
+							idVal = parsePattern(patternId, idVal, row);
+							$elem.attr('id', idVal);
+						}
+		
+						$label = $newClone.find('label[for=' + $elem.attr('id')  + ']');
+						if (!$label.length) $label = $elem.parent('label');
+						if (!$label.length) $label = $elem.siblings('label');
+						if ($label.length) {
+							// ensure we have one copy
+							$label = $label.eq(0);
+							// update label text
+							patternText = $label.data('pattern-text');
+							labelText = $label.html();
+							if (labelText) {
+								labelText = parsePattern(patternText, labelText, row);
+								$label.html(labelText);
+							}
+							// update label attribute
+							labelFor = $label.attr('for');
+							if (labelFor && idVal) {
+								$label.attr('for', idVal);
+							}
+						}
+					});
+				
+				}
+				
+				// append new clone to container
+				$newClone.insertAfter($('.' + opts.groupClass).last());
+				
+				if ($group) {
+					$group.remove();
+					$group = null;
+				}
+				
+				if ($.isFunction(opts.afterAdd)) {
+					opts.afterAdd.call(this, $newClone);
+				}
+				
+			}
+			
+			// show removal buttons
+			$('.' + opts.groupClass + ' .' + opts.btnRemoveClass).show();
+
+		}
+		
+		// daisy chain
+		return this;
 	}
 
 	/**
 	 * Add a new repeater.
 	 */
 	function addRepeater() {
-		var $formElems, $elem, $label,
-			patternName, patternId, patternText,
-			idVal, nameVal, labelText, labelFor,
-			tmpCount = repeatCount + 1,
+		var tmpCount = repeatCount + 1,
 			$doppleganger = $groupClone.clone();
+
+		if ($.isFunction(opts.beforeAdd)) {
+			$doppleganger = opts.beforeAdd.call(this, $doppleganger);
+		}
 
 		// don't exceed the max allowable items
 		if (opts.maxItems > 0 && repeatCount == opts.maxItems) {
@@ -121,14 +214,21 @@ $('.container').repeater({
 		// append repeater to container
 		if (opts.repeatMode == 'append') {
 			$doppleganger.appendTo($container);
-		} else {
+		} else if (opts.repeatMode == 'prepend') {
 			$doppleganger.prependTo($container);
+		} else if (opts.repeatMode == 'insertAfterLast') {
+			$doppleganger.insertAfter($container.find('.' + opts.groupClass).last());
 		}
 
 		repeatCount++;
+
+		if ($.isFunction(opts.afterAdd)) {
+			opts.afterAdd.call(this, $doppleganger);
+		}
+
 		return false;
 	}
-
+	
 	/**
 	 * Remove a repeater.
 	 */
@@ -147,8 +247,10 @@ $('.container').repeater({
 				// determine if removing first or last repeater
 				if (opts.repeatMode == 'append') {
 					var $match = $repeaters.filter(':last');
-				} else {
+				} else if (opts.repeatMode == 'prepend') {
 					var $match = $repeaters.filter(':first');
+				} else if (opts.repeatMode == 'insertAfterLast') {
+					var $match = $repeaters.filter(':last');
 				}
 			}
 
@@ -158,24 +260,21 @@ $('.container').repeater({
 				if (opts.animation) {
 					if (opts.animation == 'slide') {
 						$match.slideUp(opts.animationSpeed, opts.animationEasing, function() {
-							$match.remove();
+							_remove($match);
 						});
 					} else if (opts.animation == 'fade') {
 						$match.fadeOut(opts.animationSpeed, opts.animationEasing, function() {
-							$match.remove();
+							_remove($match);
 						});
 					} else if (typeof opts.animation == 'object') {
 						$match.animate(opts.animation, opts.animationSpeed, opts.animationEasing, function() {
-							$match.remove();
+							_remove($match);
 						});
 					}
 				} else {
-					$match.remove();
+					_remove($match);
 				}
 
-				if (repeatCount) {
-					repeatCount--;
-				}
 			}
 
 		}
@@ -188,6 +287,7 @@ $('.container').repeater({
 	 */
 	function parsePattern(pattern, replaceText, count) {
 		var returnVal = replaceText;
+		count = parseInt(count);
 		if (pattern) {
 			// check pattern type
 			if (pattern.indexOf('+=') > -1) {
@@ -206,17 +306,28 @@ $('.container').repeater({
 	}
 
 	/**
-	 * Wrapper to handle reindexing form elements in a group.
+	 * Wrapper to handle re-indexing form elements in a group.
 	 */
 	function reindex() {
 		var $repeaters, $curGroup;
 		var startIndex = opts.startingIndex;
-		var $repeaters = $container.find(opts.groupClass);
+		var $repeaters = $container.find('.' + opts.groupClass);
 		$repeaters.each(function() {
 			$curGroup = $(this);
 			_reindex($curGroup, startIndex);
 			startIndex++;
 		});
+	}
+
+	/**
+	 * Remove a match and reindex.
+	 */
+	function _remove($match) {
+		$match.remove();
+		if (repeatCount) {
+			repeatCount--;
+		}
+		reindex();
 	}
 
 	/**
@@ -231,7 +342,8 @@ $('.container').repeater({
 		if ($formElems.length) {
 			$formElems.each(function() {
 				$elem = $(this);
-				$elem.val('');
+				//$elem.removeClass('chzn-done');
+				//$elem.val('');
 
 				patternName = $elem.data('pattern-name');
 				if (patternName) {
@@ -282,9 +394,13 @@ $.fn.repeater.defaults = {
 	maxItems: 0,
 	startingIndex: 0,
 	reindexOnDelete: true,
-	repeatMode: 'append',
+	repeatMode: 'insertAfterLast', // append, prepend, insertAfterLast
 	animation: null,
 	animationSpeed: 400,
 	animationEasing: 'swing',
-	clearValues: true
+	clearValues: true,
+	beforeAdd: function($doppleganger) { return $doppleganger; },
+	afterAdd: function($doppleganger) { },
+	beforeDelete: function() { },
+	afterDelete: function() { }
 };

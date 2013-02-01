@@ -24,25 +24,25 @@
  *
  * Example Usage:
  *
-<div class="container">
-    <div class="r-group">
-		<p>
-			<label for="vehicle_0_0" data-pattern-text="Vehicle Name +=:">Vehicle Name 1:</label>
-			<input type="text" name="vehicle[0][name]" id="vehicle_0_name" data-pattern-name="vehicle[++][name]" data-pattern-id="vehicle_++_name" />
-		</p>
-		<p>
-			<label for="vehicle_0_0" data-pattern-text="Vehicle Type +=:">Vehicle Type 1:</label>
-			<input type="text" name="vehicle[0][type]" id="vehicle_0_type" data-pattern-name="vehicle[++][type]" data-pattern-id="vehicle_++_type" />
-		</p>
-		<p>
-			<-- Add a remove button for the item. If one didn't exist, it would be added to overall group -->
-			<button type="button" class="r-btnRemove">Remove -</button>
-		</p>
-    </div>
-	<button type="button" class="r-btnAdd">Add +</button>
-</div>
-<script type="text/javascript">
-$('.container').repeater({
+ <div class="container">
+ <div class="r-group">
+ <p>
+ <label for="vehicle_0_0" data-pattern-text="Vehicle Name +=:">Vehicle Name 1:</label>
+ <input type="text" name="vehicle[0][name]" id="vehicle_0_name" data-pattern-name="vehicle[++][name]" data-pattern-id="vehicle_++_name" />
+ </p>
+ <p>
+ <label for="vehicle_0_0" data-pattern-text="Vehicle Type +=:">Vehicle Type 1:</label>
+ <input type="text" name="vehicle[0][type]" id="vehicle_0_type" data-pattern-name="vehicle[++][type]" data-pattern-id="vehicle_++_type" />
+ </p>
+ <p>
+ <-- Add a remove button for the item. If one didn't exist, it would be added to overall group -->
+ <button type="button" class="r-btnRemove">Remove -</button>
+ </p>
+ </div>
+ <button type="button" class="r-btnAdd">Add +</button>
+ </div>
+ <script type="text/javascript">
+ $('.container').repeater({
 	btnAddClass: 'r-btnAdd',
 	btnRemoveClass: 'r-btnRemove',
 	groupClass: 'r-group',
@@ -56,351 +56,361 @@ $('.container').repeater({
 	animationEasing: 'swing',
 	clearValues: true
 });
-</script>
+ </script>
  */
 (function($) {
-	var $container, $group, $groupClone, opts, repeatCount = 0;
 
-	$.fn.repeater = function(options, data) {
-		$container = $(this);
-		opts = $.extend({}, $.fn.repeater.defaults, options);
-		var $btnAdd = $container.find('.' + opts.btnAddClass);
-		if (!$btnAdd.length) {
-			alert('You must specify a valid jQuery selector for the add button option in Form Repeater.');
-			return false;
-		}
+    $.fn.repeater = function(options, data) {
+        var $container = $(this);
 
-		// parse out group details
-		$group = $('.' + opts.groupClass);
-		if (!$group.length) {
-			alert('You must specify a valid jQuery selector for the form element grouping option in Form Repeater.');
-			return false;
-		}
+        $container.opts = $.extend({}, $.fn.repeater.defaults, options);
+        $container.repeatCount = 0;
 
-		// ensure the remove button exists
-		$btnRemove = $group.find('.' + opts.btnRemoveClass);
-		if (!$btnRemove.length) {
-			$btnRemove = $('<button type="button" name="rBtnRemove" class="' + opts.btnRemoveClass + '" style="display:none" />')
-			$btnRemove.appendTo($container);
-		} else {
-			// default hidden
-			$btnRemove.hide();
-		}
+        var $btnAdd = $container.find('.' + $container.opts.btnAddClass);
+        if (!$btnAdd.length) {
+            alert('You must specify a valid jQuery selector for the add button option in Form Repeater.');
+            return false;
+        }
 
-		// narrow the group down to the first copy
-		$group = $group.eq(0);
-		// retrieve form elements
-		$groupClone = $group.clone();
-		// watch for add
-		$container.find('.' + opts.btnAddClass).live('click', addRepeater);
-		// watch for remove
-		$container.find('.' + opts.btnRemoveClass).live('click', removeRepeater);
-		
-		// allows for initial population of form data
-		if (data && data.length) {
-			var patternName, patternId, patternText,
-				idVal, nameVal, labelText, labelFor,
-				$elem, elemName, $label;
+        // parse out group details
+        $container.group = $('.' + $container.opts.groupClass);
+        if (!$container.group.length) {
+            alert('You must specify a valid jQuery selector for the form element grouping option in Form Repeater.');
+            return false;
+        }
 
-			// create grouping for every row of data
-			for (var row in data) {
-				
-				// keep cloning
-				var $newClone = $groupClone.clone();
-				
-				if ($.isFunction(opts.beforeAdd)) {
-					$newClone = opts.beforeAdd.call(this, $newClone);
-				}
-				
-				var $formElems = $newClone.find(':input');
-				if ($formElems.length) {
-				
-					// populate each input field
-					$formElems.each(function() {
-						$elem = $(this);
-		
-						// check for elements naming
-						elemName = $elem.data('name');
-						
-						// check for matching value
-						if (typeof data[row][elemName] != 'undefined') {
-							$elem.val(data[row][elemName]);
-						} else {
-							$elem.val('');
-						}
+        // ensure the remove button exists
+        $btnRemove = $container.group.find('.' + $container.opts.btnRemoveClass);
+        if (!$btnRemove.length) {
+            $btnRemove = $('<button type="button" name="rBtnRemove" class="' + $container.opts.btnRemoveClass + '" style="display:none" />')
+            $btnRemove.appendTo($container);
+        } else {
+            // default hidden
+            $btnRemove.hide();
+        }
 
-						patternName = $elem.data('pattern-name');
-						if (patternName) {
-							nameVal = $elem.attr('name');
-							nameVal = parsePattern(patternName, nameVal, row);
-							$elem.attr('name', nameVal);
-						}
-		
-						patternId = $elem.data('pattern-id');
-						if (patternId) {
-							idVal = $elem.attr('id');
-							idVal = parsePattern(patternId, idVal, row);
-							$elem.attr('id', idVal);
-						}
-		
-						$label = $newClone.find('label[for=' + $elem.attr('id')  + ']');
-						if (!$label.length) $label = $elem.parent('label');
-						if (!$label.length) $label = $elem.siblings('label');
-						if ($label.length) {
-							// ensure we have one copy
-							$label = $label.eq(0);
-							// update label text
-							patternText = $label.data('pattern-text');
-							labelText = $label.html();
-							if (labelText) {
-								labelText = parsePattern(patternText, labelText, row);
-								$label.html(labelText);
-							}
-							// update label attribute
-							labelFor = $label.attr('for');
-							if (labelFor && idVal) {
-								$label.attr('for', idVal);
-							}
-						}
-					});
-				
-				}
-				
-				// append new clone to container
-				$newClone.insertAfter($('.' + opts.groupClass).last());
-				
-				if ($group) {
-					$group.remove();
-					$group = null;
-				}
-				
-				if ($.isFunction(opts.afterAdd)) {
-					opts.afterAdd.call(this, $newClone);
-				}
-				
-			}
-			
-			// show removal buttons
-			$('.' + opts.groupClass + ' .' + opts.btnRemoveClass).show();
+        // narrow the group down to the first copy
+        $container.group = $container.group.eq(0);
+        // retrieve form elements
+        $container.groupClone = $container.group.clone();
+        // watch for remove
+        //$container.find('.' + $container.opts.btnRemoveClass).live('click', removeRepeater);
+        $container.delegate('.' + $container.opts.btnRemoveClass, 'click', $container, removeRepeater);
+        // watch for add
+        //$container.find('.' + $container.opts.btnAddClass).live('click', addRepeater);
+        $container.delegate('.' + $container.opts.btnAddClass, 'click', $container, addRepeater);
 
-		}
-		
-		// daisy chain
-		return this;
-	}
+        // allows for initial population of form data
+        if (data && data.length) {
+            var patternName, patternId, patternText,
+                idVal, nameVal, labelText, labelFor,
+                $elem, elemName, $label;
 
-	/**
-	 * Add a new repeater.
-	 */
-	function addRepeater() {
-		var tmpCount = repeatCount + 1,
-			$doppleganger = $groupClone.clone();
+            // create grouping for every row of data
+            for (var row in data) {
 
-		if ($.isFunction(opts.beforeAdd)) {
-			$doppleganger = opts.beforeAdd.call(this, $doppleganger);
-		}
+                // keep cloning
+                var $newClone = $container.groupClone.clone();
 
-		// don't exceed the max allowable items
-		if (opts.maxItems > 0 && repeatCount == opts.maxItems) {
-			alert('You have hit the maximum allowable items.');
-			return false;
-		}
+                if ($.isFunction($container.opts.beforeAdd)) {
+                    $newClone = $container.opts.beforeAdd.call(this, $newClone);
+                }
 
-		_reindex($doppleganger, tmpCount);
+                var $formElems = $newClone.find(':input');
+                if ($formElems.length) {
 
-		// ensure remove button is showing
-		$doppleganger.find('.' + opts.btnRemoveClass).show();
+                    // populate each input field
+                    $formElems.each(function() {
+                        $elem = $(this);
 
-		// append repeater to container
-		if (opts.repeatMode == 'append') {
-			$doppleganger.appendTo($container);
-		} else if (opts.repeatMode == 'prepend') {
-			$doppleganger.prependTo($container);
-		} else if (opts.repeatMode == 'insertAfterLast') {
-			$doppleganger.insertAfter($container.find('.' + opts.groupClass).last());
-		}
+                        // check for elements naming
+                        elemName = $elem.data('name');
 
-		repeatCount++;
+                        // check for matching value
+                        if (typeof data[row][elemName] != 'undefined') {
+                            $elem.val(data[row][elemName]);
+                        } else {
+                            $elem.val('');
+                        }
 
-		if ($.isFunction(opts.afterAdd)) {
-			opts.afterAdd.call(this, $doppleganger);
-		}
+                        patternName = $elem.data('pattern-name');
+                        if (patternName) {
+                            nameVal = $elem.attr('name');
+                            nameVal = parsePattern(patternName, nameVal, row, $container);
+                            $elem.attr('name', nameVal);
+                        }
 
-		return false;
-	}
-	
-	/**
-	 * Remove a repeater.
-	 */
-	function removeRepeater() {
-		// determine if the button is nested in a repeater
-		var $btn = $(this);
+                        patternId = $elem.data('pattern-id');
+                        if (patternId) {
+                            idVal = $elem.attr('id');
+                            idVal = parsePattern(patternId, idVal, row, $container);
+                            $elem.attr('id', idVal);
+                        }
 
-		// get all instances of repeaters
-		var $repeaters = $container.find('.' + opts.groupClass);
-		var numRepeaters = $repeaters.length;
-		if (numRepeaters > opts.minItems) {
+                        $label = $newClone.find('label[for=' + $elem.attr('id')  + ']');
+                        if (!$label.length) $label = $elem.parent('label');
+                        if (!$label.length) $label = $elem.siblings('label');
+                        if ($label.length) {
+                            // ensure we have one copy
+                            $label = $label.eq(0);
+                            // update label text
+                            patternText = $label.data('pattern-text');
+                            labelText = $label.html();
+                            if (labelText) {
+                                labelText = parsePattern(patternText, labelText, row, $container);
+                                $label.html(labelText);
+                            }
+                            // update label attribute
+                            labelFor = $label.attr('for');
+                            if (labelFor && idVal) {
+                                $label.attr('for', idVal);
+                            }
+                        }
+                    });
 
-			// check if removing a specific repeater instance
-			var $match = $btn.closest('.' + opts.groupClass);
-			if (!$match.length) {
-				// determine if removing first or last repeater
-				if (opts.repeatMode == 'append') {
-					var $match = $repeaters.filter(':last');
-				} else if (opts.repeatMode == 'prepend') {
-					var $match = $repeaters.filter(':first');
-				} else if (opts.repeatMode == 'insertAfterLast') {
-					var $match = $repeaters.filter(':last');
-				}
-			}
+                }
 
-			// ensure we have a match
-			if ($match.length) {
-				// remove the repeater
-				if (opts.animation) {
-					if (opts.animation == 'slide') {
-						$match.slideUp(opts.animationSpeed, opts.animationEasing, function() {
-							_remove($match);
-						});
-					} else if (opts.animation == 'fade') {
-						$match.fadeOut(opts.animationSpeed, opts.animationEasing, function() {
-							_remove($match);
-						});
-					} else if (typeof opts.animation == 'object') {
-						$match.animate(opts.animation, opts.animationSpeed, opts.animationEasing, function() {
-							_remove($match);
-						});
-					}
-				} else {
-					_remove($match);
-				}
+                // append new clone to container
+                $newClone.insertAfter($('.' + $container.opts.groupClass).last());
 
-			}
+                if ($container.group) {
+                    $container.group.remove();
+                    $container.group = null;
+                }
 
-		}
+                if ($.isFunction($container.opts.afterAdd)) {
+                    $container.opts.afterAdd.call(this, $newClone);
+                }
 
-		return false;
-	}
+            }
 
-	/**
-	 * Parse the pattern.
-	 */
-	function parsePattern(pattern, replaceText, count) {
-		var returnVal = replaceText;
-		count = parseInt(count);
-		if (pattern) {
-			// check pattern type
-			if (pattern.indexOf('+=') > -1) {
-				var matches = pattern.match(/\+=(\d+)/i);
-				if (matches && matches.length && matches[1]) {
-					var incr = parseInt(matches[1]);
-					returnVal = pattern.replace(/\+=(\d)+/i, opts.startingIndex + count + incr);
-				}
-			}
+            // show removal buttons
+            $('.' + $container.opts.groupClass + ' .' + $container.opts.btnRemoveClass).show();
 
-			if (pattern.indexOf('++') > -1) {
-				returnVal = pattern.replace(/\+\+/gi, opts.startingIndex + count);
-			}
-		}
-		return returnVal;
-	}
+        }
 
-	/**
-	 * Wrapper to handle re-indexing form elements in a group.
-	 */
-	function reindex() {
-		var $repeaters, $curGroup;
-		var startIndex = opts.startingIndex;
-		var $repeaters = $container.find('.' + opts.groupClass);
-		$repeaters.each(function() {
-			$curGroup = $(this);
-			_reindex($curGroup, startIndex);
-			startIndex++;
-		});
-	}
+        // daisy chain
+        return this;
+    }
 
-	/**
-	 * Remove a match and reindex.
-	 */
-	function _remove($match) {
-		$match.remove();
-		if (repeatCount) {
-			repeatCount--;
-		}
-		reindex();
-	}
+    /**
+     * Add a new repeater.
+     */
+    function addRepeater(data) {
 
-	/**
-	 * Handle reindexing each form element in a group.
-	 */
-	function _reindex($curGroup, index) {
-		var patternName, patternId, patternText,
-			idVal, nameVal, labelText, labelFor,
-			$elem;
+        var container = data.data;
 
-		var $formElems = $curGroup.find(':input');
-		if ($formElems.length) {
-			$formElems.each(function() {
-				$elem = $(this);
-				//$elem.removeClass('chzn-done');
-				//$elem.val('');
+        var tmpCount = container.repeatCount + 1,
+            $doppleganger = container.groupClone.clone();
 
-				patternName = $elem.data('pattern-name');
-				if (patternName) {
-					nameVal = $elem.attr('name');
-					nameVal = parsePattern(patternName, nameVal, index);
-					$elem.attr('name', nameVal);
-				}
+        if ($.isFunction(container.opts.beforeAdd)) {
+            $doppleganger = container.opts.beforeAdd.call(this, $doppleganger);
+        }
 
-				patternId = $elem.data('pattern-id');
-				if (patternId) {
-					idVal = $elem.attr('id');
-					idVal = parsePattern(patternId, idVal, index);
-					$elem.attr('id', idVal);
-				}
+        // don't exceed the max allowable items
+        if (container.opts.maxItems > 0 && container.repeatCount == container.opts.maxItems) {
+            alert('You have hit the maximum allowable items.');
+            return false;
+        }
 
-				$label = $curGroup.find('label[for=' + $elem.attr('id')  + ']');
-				if (!$label.length) $label = $elem.parent('label');
-				if (!$label.length) $label = $elem.siblings('label');
-				if ($label.length) {
-					// ensure we have one copy
-					$label = $label.eq(0);
-					// update label text
-					patternText = $label.data('pattern-text');
-					labelText = $label.html();
-					if (labelText) {
-						labelText = parsePattern(patternText, labelText, index);
-						$label.html(labelText);
-					}
-					// update label attribute
-					labelFor = $label.attr('for');
-					if (labelFor && idVal) {
-						$label.attr('for', idVal);
-					}
-				}
-			});
-		}
-		return $curGroup;
-	}
+        _reindex($doppleganger, tmpCount, container);
+
+        // ensure remove button is showing
+        $doppleganger.find('.' + container.opts.btnRemoveClass).show();
+
+        // append repeater to container
+        if (container.opts.repeatMode == 'append') {
+            $doppleganger.appendTo(container);
+        } else if (container.opts.repeatMode == 'prepend') {
+            $doppleganger.prependTo(container);
+        } else if (container.opts.repeatMode == 'insertAfterLast') {
+            $doppleganger.insertAfter(container.find('.' + container.opts.groupClass).last());
+        }
+
+        container.repeatCount++;
+
+        if ($.isFunction(container.opts.afterAdd)) {
+            container.opts.afterAdd.call(this, $doppleganger);
+        }
+
+        return false;
+    }
+
+    /**
+     * Remove a repeater.
+     */
+    function removeRepeater(data) {
+
+        var container = data.data;
+
+        // determine if the button is nested in a repeater
+        var $btn = $(this);
+
+        // get all instances of repeaters
+        var $repeaters = container.find('.' + container.opts.groupClass);
+        var numRepeaters = $repeaters.length;
+        if (numRepeaters > container.opts.minItems) {
+
+            // check if removing a specific repeater instance
+            var $match = $btn.closest('.' + container.opts.groupClass);
+            if (!$match.length) {
+                // determine if removing first or last repeater
+                if (container.opts.repeatMode == 'append') {
+                    var $match = $repeaters.filter(':last');
+                } else if (container.opts.repeatMode == 'prepend') {
+                    var $match = $repeaters.filter(':first');
+                } else if (container.opts.repeatMode == 'insertAfterLast') {
+                    var $match = $repeaters.filter(':last');
+                }
+            }
+
+            // ensure we have a match
+            if ($match.length) {
+                // remove the repeater
+                if (container.opts.animation) {
+                    if (container.opts.animation == 'slide') {
+                        $match.slideUp(container.opts.animationSpeed, container.opts.animationEasing, function() {
+                            _remove($match, container);
+                        });
+                    } else if (container.opts.animation == 'fade') {
+                        $match.fadeOut(container.opts.animationSpeed, container.opts.animationEasing, function() {
+                            _remove($match, container);
+                        });
+                    } else if (typeof container.opts.animation == 'object') {
+                        $match.animate(container.opts.animation, container.opts.animationSpeed, container.opts.animationEasing, function() {
+                            _remove($match, container);
+                        });
+                    }
+                } else {
+                    _remove($match, container);
+                }
+
+            }
+
+        }
+
+        return false;
+    }
+
+    /**
+     * Parse the pattern.
+     */
+    function parsePattern(pattern, replaceText, count, container) {
+        var returnVal = replaceText;
+        count = parseInt(count);
+        if (pattern) {
+            // check pattern type
+            if (pattern.indexOf('+=') > -1) {
+                var matches = pattern.match(/\+=(\d+)/i);
+                if (matches && matches.length && matches[1]) {
+                    var incr = parseInt(matches[1]);
+                    returnVal = pattern.replace(/\+=(\d)+/i, container.opts.startingIndex + count + incr);
+                }
+            }
+
+            if (pattern.indexOf('++') > -1) {
+                returnVal = pattern.replace(/\+\+/gi, container.opts.startingIndex + count);
+            }
+        }
+        return returnVal;
+    }
+
+    /**
+     * Wrapper to handle re-indexing form elements in a group.
+     */
+    function reindex(container) {
+        var $repeaters, $curGroup;
+        var startIndex = container.opts.startingIndex;
+        var $repeaters = container.find('.' + container.opts.groupClass);
+        $repeaters.each(function() {
+            $curGroup = $(this);
+            _reindex($curGroup, startIndex, container);
+            startIndex++;
+        });
+    }
+
+    /**
+     * Remove a match and reindex.
+     */
+    function _remove($match, container) {
+        $match.remove();
+        if (container.repeatCount) {
+            container.repeatCount--;
+        }
+        reindex(container);
+    }
+
+    /**
+     * Handle reindexing each form element in a group.
+     */
+    function _reindex($curGroup, index, container) {
+        var patternName, patternId, patternText,
+            idVal, nameVal, labelText, labelFor,
+            $elem;
+
+        var $formElems = $curGroup.find(':input');
+        if ($formElems.length) {
+            $formElems.each(function() {
+                $elem = $(this);
+                //$elem.removeClass('chzn-done');
+                //$elem.val('');
+
+                patternName = $elem.data('pattern-name');
+                if (patternName) {
+                    nameVal = $elem.attr('name');
+                    nameVal = parsePattern(patternName, nameVal, index, container);
+                    $elem.attr('name', nameVal);
+                }
+
+                patternId = $elem.data('pattern-id');
+                if (patternId) {
+                    idVal = $elem.attr('id');
+                    idVal = parsePattern(patternId, idVal, index, container);
+                    $elem.attr('id', idVal);
+                }
+
+                $label = $curGroup.find('label[for=' + $elem.attr('id')  + ']');
+                if (!$label.length) $label = $elem.parent('label');
+                if (!$label.length) $label = $elem.siblings('label');
+                if ($label.length) {
+                    // ensure we have one copy
+                    $label = $label.eq(0);
+                    // update label text
+                    patternText = $label.data('pattern-text');
+                    labelText = $label.html();
+                    if (labelText) {
+                        labelText = parsePattern(patternText, labelText, index);
+                        $label.html(labelText);
+                    }
+                    // update label attribute
+                    labelFor = $label.attr('for');
+                    if (labelFor && idVal) {
+                        $label.attr('for', idVal);
+                    }
+                }
+            });
+        }
+        return $curGroup;
+    }
 
 })(jQuery);
 
 // default values
 $.fn.repeater.defaults = {
-	groupClass: 'r-group',
-	btnAddClass: 'r-btnAdd',
-	btnRemoveClass: 'r-btnRemove',
-	minItems: 1,
-	maxItems: 0,
-	startingIndex: 0,
-	reindexOnDelete: true,
-	repeatMode: 'insertAfterLast', // append, prepend, insertAfterLast
-	animation: null,
-	animationSpeed: 400,
-	animationEasing: 'swing',
-	clearValues: true,
-	beforeAdd: function($doppleganger) { return $doppleganger; },
-	afterAdd: function($doppleganger) { },
-	beforeDelete: function() { },
-	afterDelete: function() { }
+    groupClass: 'r-group',
+    btnAddClass: 'r-btnAdd',
+    btnRemoveClass: 'r-btnRemove',
+    minItems: 1,
+    maxItems: 0,
+    startingIndex: 0,
+    reindexOnDelete: true,
+    repeatMode: 'insertAfterLast', // append, prepend, insertAfterLast
+    animation: null,
+    animationSpeed: 400,
+    animationEasing: 'swing',
+    clearValues: true,
+    beforeAdd: function($doppleganger) { return $doppleganger; },
+    afterAdd: function($doppleganger) { },
+    beforeDelete: function() { },
+    afterDelete: function() { }
 };

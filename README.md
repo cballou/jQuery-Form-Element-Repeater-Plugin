@@ -5,18 +5,37 @@ A jQuery plugin for creating repeatable form elements, i.e. an array of input el
 
 ## Example Usage ##
 
-To use the plugin, we have a few conventions in place.
+To use the plugin, we have a few conventions in place. One of the main conventions is the usage of jQuery data elements which dictate how element names and IDs get generated as well as how label names get generated.
+
+#### Label Naming ####
+Labels for form elements generally have clear naming conventions. 
+
+To dynamically add and remove repeatable elements and groups, we need a method for incrementing the `for` attribute name. We accomplish this via the `data-pattern-text` attribute.
+
+The `data-pattern-text` attribute accepts a string as well as template keyword indicating the increment method:
+
+* **+=** This operator will increment by the numeric number following **+=**, i.e. `+=2`.
+* **++** This operator will increment by 1.
+
+#### Form Element Naming/Tagging ####
+
+The `data-pattern-id` attribute is used to dynamically determine the id of each form element.
+The `data-pattern-name` attribute is used to dynamically determine the name of each form element.
+
+These two data attributes accept the same template keywords as `data-pattern-text`.
+
+#### Example Code ####
 
 ```html
 <div class="container">
   <div class="r-group">
     <p>
-      <label for="vehicle_0_0" data-pattern-text="Vehicle Name +=:">Vehicle Name 1:</label>
+      <label for="vehicle_0_name" data-pattern-text="Vehicle Name ++:">Vehicle Name 1:</label>
       <input type="text" name="vehicle[0][name]" id="vehicle_0_name" data-pattern-name="vehicle[++][name]" data-pattern-id="vehicle_++_name" />
     </p>
 
     <p>
-      <label for="vehicle_0_0" data-pattern-text="Vehicle Type +=:">Vehicle Type 1:</label>
+      <label for="vehicle_0_type" data-pattern-text="Vehicle Type ++:">Vehicle Type 1:</label>
       <input type="text" name="vehicle[0][type]" id="vehicle_0_type" data-pattern-name="vehicle[++][type]" data-pattern-id="vehicle_++_type" />
     </p>
 

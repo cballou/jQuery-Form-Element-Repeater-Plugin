@@ -327,6 +327,9 @@ $('.container').repeater({
 		if (repeatCount) {
 			repeatCount--;
 		}
+	        if ($.isFunction(container.opts.afterDelete)) {
+	            container.opts.afterDelete.call(this, $match);
+	        }
 		reindex();
 	}
 

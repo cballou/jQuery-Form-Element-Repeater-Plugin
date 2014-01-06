@@ -384,7 +384,7 @@
                     patternText = $label.data('pattern-text');
                     labelText = $label.html();
                     if (labelText) {
-                        labelText = parsePattern(patternText, labelText, index);
+                        labelText = parsePattern(patternText, labelText, index, container);
                         $label.html(labelText);
                     }
                     // update label attribute

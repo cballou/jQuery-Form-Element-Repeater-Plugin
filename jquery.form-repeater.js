@@ -337,7 +337,12 @@
         if (container.repeatCount) {
             container.repeatCount--;
         }
+        
         reindex(container);
+        
+        if ($.isFunction(container.opts.afterDelete)) {
+            container.opts.afterDelete.call(this, $match);
+        }
     }
 
     /**

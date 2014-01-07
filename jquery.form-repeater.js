@@ -61,12 +61,15 @@
 (function($) {
 
     $.fn.repeater = function(options, data) {
-        var $container = $(this);
-
+        var $container = $(this),
+            $btnAdd, $btnRemove, patternName, patternId, patternText,
+            idVal, nameVal, labelText, labelFor, $elem, elemName, 
+            $label, row, $newClone, $formElems;
+            
         $container.opts = $.extend({}, $.fn.repeater.defaults, options);
         $container.repeatCount = 0;
 
-        var $btnAdd = $container.find('.' + $container.opts.btnAddClass);
+        $btnAdd = $container.find('.' + $container.opts.btnAddClass);
         if (!$btnAdd.length) {
             alert('You must specify a valid jQuery selector for the add button option in Form Repeater.');
             return false;
@@ -102,28 +105,23 @@
 
         // allows for initial population of form data
         if (data && data.length) {
-            var patternName, patternId, patternText,
-                idVal, nameVal, labelText, labelFor,
-                $elem, elemName, $label;
 
             // create grouping for every row of data
-            for (var row in data) {
+            for (row in data) {
 
                 // keep cloning
-                var $newClone = $container.groupClone.clone();
+                $newClone = $container.groupClone.clone();
 
                 if ($.isFunction($container.opts.beforeAdd)) {
                     $newClone = $container.opts.beforeAdd.call(this, $newClone);
                 }
 
-                var $formElems = $newClone.find(':input');
+                $formElems = $newClone.find(':input');
                 if ($formElems.length) {
 
                     // populate each input field
                     $formElems.each(function() {
-                        $elem = $(this);
-
-                        // check for elements naming
+                        $elem = $(this),
                         elemName = $elem.data('name');
 
                         // check for matching value
@@ -197,10 +195,8 @@
      * Add a new repeater.
      */
     function addRepeater(data) {
-
-        var container = data.data;
-
-        var tmpCount = container.repeatCount + 1,
+        var container = data.data,
+            tmpCount = container.repeatCount + 1,
             $doppleganger = container.groupClone.clone();
 
         if ($.isFunction(container.opts.beforeAdd)) {
@@ -240,19 +236,16 @@
      * Remove a repeater.
      */
     function removeRepeater(data) {
+        var $btn = $(this),
+            container = data.data,
+            $repeaters = container.find('.' + container.opts.groupClass);
+            numRepeaters = $repeaters.length,
+            $match;
 
-        var container = data.data;
-
-        // determine if the button is nested in a repeater
-        var $btn = $(this);
-
-        // get all instances of repeaters
-        var $repeaters = container.find('.' + container.opts.groupClass);
-        var numRepeaters = $repeaters.length;
         if (numRepeaters > container.opts.minItems) {
 
             // check if removing a specific repeater instance
-            var $match = $btn.closest('.' + container.opts.groupClass);
+            $match = $btn.closest('.' + container.opts.groupClass);
             if (!$match.length) {
                 // determine if removing first or last repeater
                 if (container.opts.repeatMode == 'append') {
@@ -297,6 +290,7 @@
      */
     function parsePattern(pattern, replaceText, count, container) {
         var returnVal = replaceText;
+        
         count = parseInt(count);
         if (pattern) {
             // check pattern type
@@ -319,9 +313,10 @@
      * Wrapper to handle re-indexing form elements in a group.
      */
     function reindex(container) {
-        var $repeaters, $curGroup;
-        var startIndex = container.opts.startingIndex;
-        var $repeaters = container.find('.' + container.opts.groupClass);
+        var $repeaters = container.find('.' + container.opts.groupClass), 
+            startIndex = container.opts.startingIndex,
+            $curGroup;
+
         $repeaters.each(function() {
             $curGroup = $(this);
             _reindex($curGroup, startIndex, container);
@@ -349,16 +344,14 @@
      * Handle reindexing each form element in a group.
      */
     function _reindex($curGroup, index, container) {
-        var patternName, patternId, patternText,
+        var $formElems = $curGroup.find(':input'),
+            patternName, patternId, patternText,
             idVal, nameVal, labelText, labelFor,
             $elem;
 
-        var $formElems = $curGroup.find(':input');
         if ($formElems.length) {
             $formElems.each(function() {
                 $elem = $(this);
-                //$elem.removeClass('chzn-done');
-                //$elem.val('');
 
                 patternName = $elem.data('pattern-name');
                 if (patternName) {
@@ -395,6 +388,7 @@
                 }
             });
         }
+        
         return $curGroup;
     }
 

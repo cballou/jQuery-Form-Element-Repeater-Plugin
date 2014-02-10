@@ -84,3 +84,7 @@ $('.container').repeater({
 *  **animationSpeed:** The default animation speed in milliseconds. _(integer, default 400)_
 *  **animationEasing:** The easing animation effect. _(string, default 'swing')_
 *  **clearValues:** Whether values should be cleared out when cloning. _(boolean, default true)_
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/cballou/jquery-form-element-repeater-plugin/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+

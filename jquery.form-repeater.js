@@ -328,6 +328,10 @@
      * Remove a match and reindex.
      */
     function _remove($match, container) {
+        if ($.isFunction(container.opts.beforeDelete)) {
+            container.opts.beforeDelete.call(this, $match);
+        }
+    	
         $match.remove();
         if (container.repeatCount) {
             container.repeatCount--;

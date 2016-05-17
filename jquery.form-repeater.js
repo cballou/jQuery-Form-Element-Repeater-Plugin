@@ -97,10 +97,8 @@
         // retrieve form elements
         $container.groupClone = $container.group.clone();
         // watch for remove
-        //$container.find('.' + $container.opts.btnRemoveClass).live('click', removeRepeater);
         $container.delegate('.' + $container.opts.btnRemoveClass, 'click', $container, removeRepeater);
         // watch for add
-        //$container.find('.' + $container.opts.btnAddClass).live('click', addRepeater);
         $container.delegate('.' + $container.opts.btnAddClass, 'click', $container, addRepeater);
 
         // allows for initial population of form data
@@ -242,44 +240,43 @@
             numRepeaters = $repeaters.length,
             $match;
 
-        if (numRepeaters > container.opts.minItems) {
+        if (numRepeaters <= container.opts.minItems) {
+            return false;
+        }
 
-            // check if removing a specific repeater instance
-            $match = $btn.closest('.' + container.opts.groupClass);
-            if (!$match.length) {
-                // determine if removing first or last repeater
-                if (container.opts.repeatMode == 'append') {
-                    var $match = $repeaters.filter(':last');
-                } else if (container.opts.repeatMode == 'prepend') {
-                    var $match = $repeaters.filter(':first');
-                } else if (container.opts.repeatMode == 'insertAfterLast') {
-                    var $match = $repeaters.filter(':last');
-                }
+        // check if removing a specific repeater instance
+        $match = $btn.closest('.' + container.opts.groupClass);
+        if (!$match.length) {
+            // determine if removing first or last repeater
+            if (container.opts.repeatMode == 'append') {
+                var $match = $repeaters.filter(':last');
+            } else if (container.opts.repeatMode == 'prepend') {
+                var $match = $repeaters.filter(':first');
+            } else if (container.opts.repeatMode == 'insertAfterLast') {
+                var $match = $repeaters.filter(':last');
             }
+        }
 
-            // ensure we have a match
-            if ($match.length) {
-                // remove the repeater
-                if (container.opts.animation) {
-                    if (container.opts.animation == 'slide') {
-                        $match.slideUp(container.opts.animationSpeed, container.opts.animationEasing, function() {
-                            _remove($match, container);
-                        });
-                    } else if (container.opts.animation == 'fade') {
-                        $match.fadeOut(container.opts.animationSpeed, container.opts.animationEasing, function() {
-                            _remove($match, container);
-                        });
-                    } else if (typeof container.opts.animation == 'object') {
-                        $match.animate(container.opts.animation, container.opts.animationSpeed, container.opts.animationEasing, function() {
-                            _remove($match, container);
-                        });
-                    }
-                } else {
-                    _remove($match, container);
+        // ensure we have a match
+        if ($match.length) {
+            // remove the repeater
+            if (container.opts.animation) {
+                if (container.opts.animation == 'slide') {
+                    $match.slideUp(container.opts.animationSpeed, container.opts.animationEasing, function() {
+                        _remove($match, container);
+                    });
+                } else if (container.opts.animation == 'fade') {
+                    $match.fadeOut(container.opts.animationSpeed, container.opts.animationEasing, function() {
+                        _remove($match, container);
+                    });
+                } else if (typeof container.opts.animation == 'object') {
+                    $match.animate(container.opts.animation, container.opts.animationSpeed, container.opts.animationEasing, function() {
+                        _remove($match, container);
+                    });
                 }
-
+            } else {
+                _remove($match, container);
             }
-
         }
 
         return false;

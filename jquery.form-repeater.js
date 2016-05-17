@@ -414,6 +414,6 @@ $.fn.repeater.defaults = {
     clearValues: true,
     beforeAdd: function($doppleganger) { return $doppleganger; },
     afterAdd: function($doppleganger) { },
-    beforeDelete: function() { },
+    beforeDelete: function($elem) { },
     afterDelete: function() { }
 };

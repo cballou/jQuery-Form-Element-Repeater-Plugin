@@ -3,7 +3,7 @@ jQuery Form Element Repeater Plugin
 
 A jQuery plugin for creating repeatable form elements, i.e. an array of input elements with add/remove capabilities. In other words, handling an array of objects (better known as a collection).
 
-[Official Documentation](https://www.coreyballou.com/projects/jquery-form-element-repeater-plugin/)
+[Official Documentation Website](https://www.coreyballou.com/projects/jquery-form-element-repeater-plugin/)
 
 ## Example Usage ##
 

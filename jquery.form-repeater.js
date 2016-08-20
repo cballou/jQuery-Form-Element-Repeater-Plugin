@@ -374,6 +374,15 @@
                     nameVal = $elem.attr('name');
                     nameVal = parsePattern(patternName, nameVal, index, container);
                     $elem.attr('name', nameVal);
+
+                    if($elem.is('input[type="checkbox"]')) {
+                        if($elem.prop('checked')) {
+                            $elem.attr('checked', true);
+                        }
+                        else {
+                            $elem.attr('checked', false);
+                        }
+                    }
                 }
 
                 patternId = $elem.data('pattern-id');
@@ -404,7 +413,7 @@
                 }
             });
         }
-        
+
         return $curGroup;
     }
 

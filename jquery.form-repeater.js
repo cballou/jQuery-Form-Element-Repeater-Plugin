@@ -362,7 +362,7 @@
     function _reindex($curGroup, index, container) {
         var $formElems = $curGroup.find(':input'),
             patternName, patternId, patternText,
-            idVal, nameVal, labelText, labelFor,
+            idVal, nameVal, $label, labelText, labelFor,
             $elem;
 
         if ($formElems.length) {

@@ -341,14 +341,16 @@
         if ($.isFunction(container.opts.beforeDelete)) {
             container.opts.beforeDelete.call(this, $match);
         }
-    	
+
         $match.remove();
         if (container.repeatCount) {
             container.repeatCount--;
         }
-        
-        reindex(container);
-        
+
+        if(container.opts.reindexOnDelete) {
+            reindex(container);
+        }
+
         if ($.isFunction(container.opts.afterDelete)) {
             container.opts.afterDelete.call(this, $match);
         }

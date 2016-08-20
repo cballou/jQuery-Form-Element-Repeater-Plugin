@@ -105,28 +105,41 @@
         if (data && data.length) {
 
             // create grouping for every row of data
-            for (row in data) {
-
+            data.forEach(function(condition, row) {
                 // keep cloning
                 $newClone = $container.groupClone.clone();
+                $newClone = _reindex($newClone, row, $container);
 
                 if ($.isFunction($container.opts.beforeAdd)) {
                     $newClone = $container.opts.beforeAdd.call(this, $newClone);
                 }
 
                 $formElems = $newClone.find(':input');
-                if ($formElems.length) {
 
+
+                if ($formElems.length) {
                     // populate each input field
                     $formElems.each(function() {
                         $elem = $(this),
-                        elemName = $elem.data('name');
+                        elemName = $elem.attr('name');
 
                         // check for matching value
                         if (typeof data[row][elemName] != 'undefined') {
-                            $elem.val(data[row][elemName]);
+                            if($elem.is('input[type="checkbox"]')) {
+                                if(data[row][elemName] === '' || data[row][elemName] === '1') {
+                                    $elem.attr('checked', true);
+                                }
+                            }
+                            else {
+                                $elem.val(data[row][elemName]);
+                            }
                         } else {
-                            $elem.val('');
+                            if($elem.is('input[type="checkbox"]')) {
+                                $elem.attr('checked', false);
+                            }
+                            else {
+                                $elem.val('');
+                            }
                         }
 
                         patternName = $elem.data('pattern-name');
@@ -178,7 +191,7 @@
                     $container.opts.afterAdd.call(this, $newClone);
                 }
 
-            }
+            });
 
             // show removal buttons
             $('.' + $container.opts.groupClass + ' .' + $container.opts.btnRemoveClass).show();

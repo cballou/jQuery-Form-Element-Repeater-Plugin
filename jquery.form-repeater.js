@@ -249,7 +249,7 @@
     function removeRepeater(data) {
         var $btn = $(this),
             container = data.data,
-            $repeaters = container.find('.' + container.opts.groupClass);
+            $repeaters = container.find('.' + container.opts.groupClass),
             numRepeaters = $repeaters.length,
             $match;
 

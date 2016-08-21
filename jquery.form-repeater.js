@@ -105,28 +105,41 @@
         if (data && data.length) {
 
             // create grouping for every row of data
-            for (row in data) {
-
+            data.forEach(function(condition, row) {
                 // keep cloning
                 $newClone = $container.groupClone.clone();
+                $newClone = _reindex($newClone, row, $container);
 
                 if ($.isFunction($container.opts.beforeAdd)) {
                     $newClone = $container.opts.beforeAdd.call(this, $newClone);
                 }
 
                 $formElems = $newClone.find(':input');
-                if ($formElems.length) {
 
+
+                if ($formElems.length) {
                     // populate each input field
                     $formElems.each(function() {
                         $elem = $(this),
-                        elemName = $elem.data('name');
+                        elemName = $elem.attr('name');
 
                         // check for matching value
                         if (typeof data[row][elemName] != 'undefined') {
-                            $elem.val(data[row][elemName]);
+                            if($elem.is('input[type="checkbox"]')) {
+                                if(data[row][elemName] === '' || data[row][elemName] === '1') {
+                                    $elem.attr('checked', true);
+                                }
+                            }
+                            else {
+                                $elem.val(data[row][elemName]);
+                            }
                         } else {
-                            $elem.val('');
+                            if($elem.is('input[type="checkbox"]')) {
+                                $elem.attr('checked', false);
+                            }
+                            else {
+                                $elem.val('');
+                            }
                         }
 
                         patternName = $elem.data('pattern-name');
@@ -178,7 +191,7 @@
                     $container.opts.afterAdd.call(this, $newClone);
                 }
 
-            }
+            });
 
             // show removal buttons
             $('.' + $container.opts.groupClass + ' .' + $container.opts.btnRemoveClass).show();
@@ -236,7 +249,7 @@
     function removeRepeater(data) {
         var $btn = $(this),
             container = data.data,
-            $repeaters = container.find('.' + container.opts.groupClass);
+            $repeaters = container.find('.' + container.opts.groupClass),
             numRepeaters = $repeaters.length,
             $match;
 
@@ -328,14 +341,16 @@
         if ($.isFunction(container.opts.beforeDelete)) {
             container.opts.beforeDelete.call(this, $match);
         }
-    	
+
         $match.remove();
         if (container.repeatCount) {
             container.repeatCount--;
         }
-        
-        reindex(container);
-        
+
+        if(container.opts.reindexOnDelete) {
+            reindex(container);
+        }
+
         if ($.isFunction(container.opts.afterDelete)) {
             container.opts.afterDelete.call(this, $match);
         }
@@ -347,7 +362,7 @@
     function _reindex($curGroup, index, container) {
         var $formElems = $curGroup.find(':input'),
             patternName, patternId, patternText,
-            idVal, nameVal, labelText, labelFor,
+            idVal, nameVal, $label, labelText, labelFor,
             $elem;
 
         if ($formElems.length) {
@@ -359,6 +374,15 @@
                     nameVal = $elem.attr('name');
                     nameVal = parsePattern(patternName, nameVal, index, container);
                     $elem.attr('name', nameVal);
+
+                    if($elem.is('input[type="checkbox"]')) {
+                        if($elem.prop('checked')) {
+                            $elem.attr('checked', true);
+                        }
+                        else {
+                            $elem.attr('checked', false);
+                        }
+                    }
                 }
 
                 patternId = $elem.data('pattern-id');
@@ -389,7 +413,7 @@
                 }
             });
         }
-        
+
         return $curGroup;
     }
 

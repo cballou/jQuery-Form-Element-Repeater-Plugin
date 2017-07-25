@@ -183,8 +183,14 @@
 
                 }
 
-                // append new clone to container
-                $newClone.appendTo($container);
+                // append repeater to container
+                if ($container.opts.repeatMode == 'append') {
+                    $newClone.appendTo($container);
+                } else if ($container.opts.repeatMode == 'prepend') {
+                    $newClone.prependTo($container);
+                } else if ($container.opts.repeatMode == 'insertAfterLast') {
+                    $newClone.insertAfter($container.find('.' + $container.opts.groupClass).last());
+                }
 
                 // remove the initial dom container
                 if ($container.group) {

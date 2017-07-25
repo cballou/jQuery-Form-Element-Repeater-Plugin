@@ -448,7 +448,7 @@ $.fn.repeater.defaults = {
     groupClass: 'r-group',
     btnAddClass: 'r-btnAdd',
     btnRemoveClass: 'r-btnRemove',
-    minItems: 0,
+    minItems: 1,
     maxItems: 0,
     startingIndex: 0,
     reindexOnDelete: true,

@@ -213,7 +213,7 @@
         }
 
         // ensure the $container is repeated for atleast the min-items amount
-        if ($container.repeatCount < $container.opts.minItems - 1) {
+        if ($container.opts.showMinItemsOnLoad === true && $container.repeatCount < $container.opts.minItems - 1) {
             while ($container.repeatCount < $container.opts.minItems - 1) {
                 $('.' + $container.opts.btnAddClass, $container).trigger('click');
             }
@@ -452,6 +452,7 @@ $.fn.repeater.defaults = {
     maxItems: 0,
     startingIndex: 0,
     reindexOnDelete: true,
+    showMinItemsOnLoad: false,
     repeatMode: 'insertAfterLast', // append, prepend, insertAfterLast
     animation: null,
     animationSpeed: 400,

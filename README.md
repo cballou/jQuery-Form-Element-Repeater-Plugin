@@ -80,6 +80,7 @@ $('.container').repeater({
 *  **minItems:** The minimum number of items to display on load. _(integer, default 1)_
 *  **maxItems:** The maximum number of allowable items/groups. 0 means unlimited. _(integer, default 0)_
 *  **startingIndex:** The starting index for group items. _(integer, default 0)_
+*  **showMinItemsOnLoad** Repeat container *{minItems}* times on first-load  _(boolean, default false)_
 *  **reindexOnDelete:** Force re-index all group items on delete. _(boolean, default true)_
 *  **repeatMode:** The type of insertion mode for new group items. _(string, default append)_
 *  **animation:** Uh, I forgot. _(default null)_

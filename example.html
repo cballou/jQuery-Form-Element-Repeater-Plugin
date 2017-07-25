@@ -55,7 +55,16 @@ $('#example1').repeater({
       animationSpeed: 400,
       animationEasing: 'swing',
       clearValues: true
-  });
+  }, [
+      {
+          "vehicle[0][name]":"test",
+          "vehicle[0][type]":"test"
+      },
+      {
+          "vehicle[1][name]":"test2",
+          "vehicle[1][type]":"test2"
+      }
+  ]);
   </script>
   </body>
 </html>

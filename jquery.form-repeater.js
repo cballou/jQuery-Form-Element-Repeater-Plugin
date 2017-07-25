@@ -63,9 +63,9 @@
     $.fn.repeater = function(options, data) {
         var $container = $(this),
             $btnAdd, $btnRemove, patternName, patternId, patternText,
-            idVal, nameVal, labelText, labelFor, $elem, elemName, 
+            idVal, nameVal, labelText, labelFor, $elem, elemName,
             $label, row, $newClone, $formElems;
-            
+
         $container.opts = $.extend({}, $.fn.repeater.defaults, options);
         $container.repeatCount = 0;
 
@@ -96,6 +96,14 @@
         $container.group = $container.group.eq(0);
         // retrieve form elements
         $container.groupClone = $container.group.clone();
+        // remove the initial item when minItems === 0
+        if ($container.opts.minItems === 0) {
+            // remove the group that describes the repeat
+            $container.group.remove();
+            // adjust the count to remove first item
+            $container.repeatCount--;
+        }
+
         // watch for remove
         $container.delegate('.' + $container.opts.btnRemoveClass, 'click', $container, removeRepeater);
         // watch for add
@@ -103,7 +111,6 @@
 
         // allows for initial population of form data
         if (data && data.length) {
-
             // create grouping for every row of data
             data.forEach(function(condition, row) {
                 // keep cloning
@@ -116,28 +123,25 @@
 
                 $formElems = $newClone.find(':input');
 
-
                 if ($formElems.length) {
                     // populate each input field
                     $formElems.each(function() {
                         $elem = $(this),
-                        elemName = $elem.attr('name');
+                            elemName = $elem.attr('name');
 
                         // check for matching value
                         if (typeof data[row][elemName] != 'undefined') {
-                            if($elem.is('input[type="checkbox"]')) {
-                                if(data[row][elemName] === '' || data[row][elemName] === '1') {
+                            if ($elem.is('input[type="checkbox"]')) {
+                                if (data[row][elemName] === '' || data[row][elemName] === '1') {
                                     $elem.attr('checked', true);
                                 }
-                            }
-                            else {
+                            } else {
                                 $elem.val(data[row][elemName]);
                             }
                         } else {
-                            if($elem.is('input[type="checkbox"]')) {
+                            if ($elem.is('input[type="checkbox"]')) {
                                 $elem.attr('checked', false);
-                            }
-                            else {
+                            } else {
                                 $elem.val('');
                             }
                         }
@@ -156,7 +160,7 @@
                             $elem.attr('id', idVal);
                         }
 
-                        $label = $newClone.find('label[for=' + $elem.attr('id')  + ']');
+                        $label = $newClone.find('label[for=' + $elem.attr('id') + ']');
                         if (!$label.length) $label = $elem.parent('label');
                         if (!$label.length) $label = $elem.siblings('label');
                         if ($label.length) {
@@ -180,23 +184,35 @@
                 }
 
                 // append new clone to container
-                $newClone.insertAfter($('.' + $container.opts.groupClass).last());
+                $newClone.appendTo($container);
 
+                // remove the initial dom container
                 if ($container.group) {
                     $container.group.remove();
                     $container.group = null;
                 }
 
+                // calculate the repeatCount based on whats in the dom
+                $container.repeatCount = $container.find('.' + $container.opts.groupClass).length - 1;
+
+                // shows removal buttons only inside the new clone when were above the minItems count
+                if ($container.repeatCount > $container.opts.minItems - 1) {
+                    $newClone.find('.' + $container.opts.btnRemoveClass).show();
+                }
+
                 if ($.isFunction($container.opts.afterAdd)) {
                     $container.opts.afterAdd.call(this, $newClone);
                 }
-
             });
-
-            // show removal buttons
-            $('.' + $container.opts.groupClass + ' .' + $container.opts.btnRemoveClass).show();
-
         }
+
+        // ensure the $container is repeated for atleast the min-items amount
+        if ($container.repeatCount < $container.opts.minItems - 1) {
+            while ($container.repeatCount < $container.opts.minItems - 1) {
+                $('.' + $container.opts.btnAddClass, $container).trigger('click');
+            }
+        }
+
 
         // daisy chain
         return this;
@@ -222,8 +238,10 @@
 
         _reindex($doppleganger, tmpCount, container);
 
-        // ensure remove button is showing
-        $doppleganger.find('.' + container.opts.btnRemoveClass).show();
+        // shows removal buttons only inside the new clone when were above the minItems count
+        if (container.repeatCount >= container.opts.minItems - 1) {
+            $doppleganger.find('.' + container.opts.btnRemoveClass).show();
+        }
 
         // append repeater to container
         if (container.opts.repeatMode == 'append') {
@@ -300,7 +318,7 @@
      */
     function parsePattern(pattern, replaceText, count, container) {
         var returnVal = replaceText;
-        
+
         count = parseInt(count);
         if (pattern) {
             // check pattern type
@@ -323,7 +341,7 @@
      * Wrapper to handle re-indexing form elements in a group.
      */
     function reindex(container) {
-        var $repeaters = container.find('.' + container.opts.groupClass), 
+        var $repeaters = container.find('.' + container.opts.groupClass),
             startIndex = container.opts.startingIndex,
             $curGroup;
 
@@ -343,11 +361,12 @@
         }
 
         $match.remove();
-        if (container.repeatCount) {
+
+        if (typeof container.repeatCount === "number") {
             container.repeatCount--;
         }
 
-        if(container.opts.reindexOnDelete) {
+        if (container.opts.reindexOnDelete) {
             reindex(container);
         }
 
@@ -375,11 +394,10 @@
                     nameVal = parsePattern(patternName, nameVal, index, container);
                     $elem.attr('name', nameVal);
 
-                    if($elem.is('input[type="checkbox"]')) {
-                        if($elem.prop('checked')) {
+                    if ($elem.is('input[type="checkbox"]') || $elem.is('input[type="radio"]')) {
+                        if ($elem.prop('checked')) {
                             $elem.attr('checked', true);
-                        }
-                        else {
+                        } else {
                             $elem.attr('checked', false);
                         }
                     }
@@ -392,7 +410,7 @@
                     $elem.attr('id', idVal);
                 }
 
-                $label = $curGroup.find('label[for=' + $elem.attr('id')  + ']');
+                $label = $curGroup.find('label[for=' + $elem.attr('id') + ']');
                 if (!$label.length) $label = $elem.parent('label');
                 if (!$label.length) $label = $elem.siblings('label');
                 if ($label.length) {
@@ -424,7 +442,7 @@ $.fn.repeater.defaults = {
     groupClass: 'r-group',
     btnAddClass: 'r-btnAdd',
     btnRemoveClass: 'r-btnRemove',
-    minItems: 1,
+    minItems: 0,
     maxItems: 0,
     startingIndex: 0,
     reindexOnDelete: true,
@@ -433,8 +451,10 @@ $.fn.repeater.defaults = {
     animationSpeed: 400,
     animationEasing: 'swing',
     clearValues: true,
-    beforeAdd: function($doppleganger) { return $doppleganger; },
-    afterAdd: function($doppleganger) { },
-    beforeDelete: function($elem) { },
-    afterDelete: function() { }
+    beforeAdd: function($doppleganger) {
+        return $doppleganger;
+    },
+    afterAdd: function($doppleganger) {},
+    beforeDelete: function($elem) {},
+    afterDelete: function() {}
 };

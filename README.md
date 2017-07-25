@@ -62,6 +62,7 @@ $('.container').repeater({
   minItems: 1,
   maxItems: 0,
   startingIndex: 0,
+  showMinItemsOnLoad: false,
   reindexOnDelete: true,
   repeatMode: 'append',
   animation: null,

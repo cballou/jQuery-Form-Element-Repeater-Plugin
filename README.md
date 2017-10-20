@@ -10,7 +10,7 @@ A jQuery plugin for creating repeatable form elements, i.e. an array of input el
 To use the plugin, we have a few conventions in place. One of the main conventions is the usage of jQuery data elements which dictate how element names and IDs get generated as well as how label names get generated.
 
 #### Label Naming ####
-Labels for form elements generally have clear naming conventions. 
+Labels for form elements generally have clear naming conventions.
 
 To dynamically add and remove repeatable elements and groups, we need a method for incrementing the `for` attribute name. We accomplish this via the `data-pattern-text` attribute.
 
@@ -62,6 +62,7 @@ $('.container').repeater({
   minItems: 1,
   maxItems: 0,
   startingIndex: 0,
+  showMinItemsOnLoad: false,
   reindexOnDelete: true,
   repeatMode: 'append',
   animation: null,
@@ -80,6 +81,7 @@ $('.container').repeater({
 *  **minItems:** The minimum number of items to display on load. _(integer, default 1)_
 *  **maxItems:** The maximum number of allowable items/groups. 0 means unlimited. _(integer, default 0)_
 *  **startingIndex:** The starting index for group items. _(integer, default 0)_
+*  **showMinItemsOnLoad** Repeat container *{minItems}* times on first-load  _(boolean, default false)_
 *  **reindexOnDelete:** Force re-index all group items on delete. _(boolean, default true)_
 *  **repeatMode:** The type of insertion mode for new group items. _(string, default append)_
 *  **animation:** Uh, I forgot. _(default null)_
@@ -87,6 +89,30 @@ $('.container').repeater({
 *  **animationEasing:** The easing animation effect. _(string, default 'swing')_
 *  **clearValues:** Whether values should be cleared out when cloning. _(boolean, default true)_
 
+## Passing in a data object ##
+
+The plugin supports automatically cloning the repeatable object *n* times based on the content of a data object.
+
+The data object should contain an array for each item which should be filled into the repeatable container, each inputs name should be provided in full.
+
+```javascript
+...
+    $('.container').repeater({
+        ...
+    }, [
+        {
+            "vehicle[0][name]": "name1",
+            "vehicle[0][type]": "type1"
+        },
+        {
+            "vehicle[1][name]": "name2",
+            "vehicle[1][type]": "type2"
+        }
+    ]);
+...
+```
+
+Using the configuration in the first example, this would add an extra clone to the repeatable form and fill both entries with the supplied data, the first entry would follow the "minItems" option and have no removal button, whereas the second item would be removable.
+
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/cballou/jquery-form-element-repeater-plugin/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-

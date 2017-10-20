@@ -30,13 +30,23 @@ $('#example1').repeater({
 	minItems: 1,
 	maxItems: 0,
 	startingIndex: 0,
+    showMinItemsOnLoad: true,
 	reindexOnDelete: true,
 	repeatMode: 'append',
 	animation: null,
 	animationSpeed: 400,
 	animationEasing: 'swing',
 	clearValues: true
-});
+}, [
+    {
+        "vehicle[0][name]":"test",
+        "vehicle[0][type]":"test"
+    },
+    {
+        "vehicle[1][name]":"test2",
+        "vehicle[1][type]":"test2"
+    }
+]);
 </pre>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -49,13 +59,23 @@ $('#example1').repeater({
       minItems: 1,
       maxItems: 0,
       startingIndex: 0,
+      showMinItemsOnLoad: true,
       reindexOnDelete: true,
       repeatMode: 'append',
       animation: null,
       animationSpeed: 400,
       animationEasing: 'swing',
       clearValues: true
-  });
+  }, [
+      {
+          "vehicle[0][name]":"test",
+          "vehicle[0][type]":"test"
+      },
+      {
+          "vehicle[1][name]":"test2",
+          "vehicle[1][type]":"test2"
+      }
+  ]);
   </script>
   </body>
 </html>

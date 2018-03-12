@@ -105,9 +105,9 @@
         }
 
         // watch for remove
-        $container.delegate('.' + $container.opts.btnRemoveClass, 'click', $container, removeRepeater);
+	$container.on('click', '.' + $container.opts.btnRemoveClass, removeRepeater);
         // watch for add
-        $container.delegate('.' + $container.opts.btnAddClass, 'click', $container, addRepeater);
+	$container.on('click', '.' + $container.opts.btnAddClass, addRepeater);
 
         // allows for initial population of form data
         if (data && data.length) {
